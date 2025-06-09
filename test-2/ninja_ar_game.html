@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AR Fruit Ninja (Single Marker)</title>
+
+  <!-- A-Frame + MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe@1.3.0/dist/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/aframe/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body, html { margin: 0; overflow: hidden; }
+    #hud {
+      position: fixed;
+      top: 10px; left: 10px;
+      color: white; font-family: sans-serif;
+      background: rgba(0,0,0,0.6);
+      padding: 10px; border-radius: 8px;
+      z-index: 10;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="hud">
+    Score: <span id="score">0</span><br />
+    Missed: <span id="missed">0</span>
+  </div>
+
+  <a-scene
+    mindar-image="imageTargetSrc: targets/fruits.mind"
+    embedded
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: true"
+  >
+    <a-assets>
+      <a-asset-item id="appleModel" src="models/apple.glb"></a-asset-item>
+      <a-asset-item id="bananaModel" src="models/banana.glb"></a-asset-item>
+      <a-asset-item id="grapeModel" src="models/grape.glb"></a-asset-item>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- 單一 marker（fruits.mind targetIndex: 0） -->
+    <a-entity mindar-image-target="targetIndex: 0" id="gameMarker">
+      <a-entity id="fruitContainer"></a-entity>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    const fruitContainer = document.getElementById("fruitContainer");
+    const scoreEl = document.getElementById("score");
+    const missedEl = document.getElementById("missed");
+
+    let score = 0;
+    let missed = 0;
+
+    const models = ["appleModel", "bananaModel", "grapeModel"];
+
+    function spawnFruit() {
+      const modelId = models[Math.floor(Math.random() * models.length)];
+      const fruit = document.createElement("a-entity");
+
+      fruit.setAttribute("gltf-model", "#" + modelId);
+      fruit.setAttribute("scale", "0.3 0.3 0.3");
+
+      const x = (Math.random() - 0.5) * 1.5;
+      const z = (Math.random() - 0.5) * 1.5;
+      fruit.setAttribute("position", `${x} 0 ${z}`);
+
+      fruit.setAttribute("animation", {
+        property: "position",
+        to: `${x} 2.5 ${z}`,
+        dur: 3000,
+        easing: "linear"
+      });
+
+      fruit.addEventListener("click", () => {
+        if (fruit.parentNode) {
+          fruitContainer.removeChild(fruit);
+          score += 1;
+          scoreEl.textContent = score;
+        }
+      });
+
+      setTimeout(() => {
+        if (fruit.parentNode) {
+          fruitContainer.removeChild(fruit);
+          missed += 1;
+          missedEl.textContent = missed;
+          if (missed >= 10) {
+            alert("You Lose!");
+          }
+        }
+      }, 3000);
+
+      fruitContainer.appendChild(fruit);
+    }
+
+    // 每秒生一個水果
+    setInterval(() => {
+      const scene = document.querySelector("a-scene");
+      if (!scene.hasLoaded) return;
+
+      spawnFruit();
+    }, 1000);
+  </script>
+</body>
+</html>

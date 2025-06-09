@@ -2,117 +2,400 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>AR Fruit Ninja (Single Marker)</title>
-
+  <title>AR Fruit Ninja</title>
   <!-- A-Frame + MindAR -->
   <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   <style>
-      /* 隱藏滾動條，讓 AR 視圖全螢幕顯示 */
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-    </style>
-  </head>
-</html>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Arial', sans-serif;
+    }
+    
+    #hud {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 999;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      backdrop-filter: blur(5px);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    #gameStatus {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 15px;
+      font-size: 24px;
+      text-align: center;
+      display: none;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .game-button {
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .game-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
 <body>
-  <!-- A-Frame 場景根元素 -->
-  <!-- mindar-image：設定 AR 標記檔案路徑、自動開始與 UI 顯示 -->
+  <!-- 得分UI -->
+  <div id="hud">
+    Score: <span id="score">0</span><br>
+    Missed: <span id="missed">0</span>
+  </div>
+  
+  <!-- 遊戲狀態提示 -->
+  <div id="gameStatus">
+    <div id="statusText">請掃描標記開始遊戲</div>
+    <button class="game-button" id="restartBtn" onclick="restartGame()" style="display: none;">重新開始</button>
+  </div>
+
+  <!-- A-Frame場景 -->
   <a-scene
-    mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiLoading: true; uiError: true; uiScanning: true;"
+    mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind; autoStart: true; uiLoading: #my-loading; uiScanning: #my-scanning; uiError: #my-error;"
+    embedded
     color-space="sRGB"
     renderer="colorManagement: true; physicallyCorrectLights: true"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
   >
-
-<body>
-  <div id="hud">
-    Score: <span id="score">0</span><br />
-    Missed: <span id="missed">0</span>
-  </div>
-
-  <a-scene
-    mindar-image="imageTargetSrc: targets/fruits.mind"
-    embedded
-    color-space="sRGB"
-    renderer="colorManagement: true, physicallyCorrectLights"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: true"
-  >
+    <!-- 資源預載 -->
     <a-assets>
-      <a-asset-item id="appleModel" src="models/apple.glb"></a-asset-item>
-      <a-asset-item id="bananaModel" src="models/banana.glb"></a-asset-item>
-      <a-asset-item id="grapeModel" src="models/grape.glb"></a-asset-item>
+      <!-- 使用基本幾何體代替3D模型 -->
+      <a-mixin id="fruit-mixin" 
+               geometry="primitive: sphere; radius: 0.1" 
+               material="roughness: 0.3; metalness: 0.1"
+               animation__hover="property: rotation; to: 0 360 0; dur: 2000; loop: true">
+      </a-mixin>
     </a-assets>
 
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <!-- 相機設定 -->
+    <a-camera position="0 0 0" look-controls="enabled: false" cursor="rayOrigin: mouse"></a-camera>
 
-    <!-- 單一 marker（fruits.mind targetIndex: 0） -->
+    <!-- AR標記目標 -->
     <a-entity mindar-image-target="targetIndex: 0" id="gameMarker">
+      <!-- 遊戲場地指示器 -->
+      <a-plane 
+        position="0 0 0" 
+        rotation="-90 0 0" 
+        width="2" 
+        height="2" 
+        color="#4CC3D9" 
+        opacity="0.3"
+        material="transparent: true">
+      </a-plane>
+      
+      <!-- 水果容器 -->
       <a-entity id="fruitContainer"></a-entity>
+      
+      <!-- 遊戲邊界提示 -->
+      <a-text 
+        value="AR Fruit Ninja" 
+        position="0 0.5 0" 
+        align="center" 
+        color="#FF0000"
+        scale="0.5 0.5 0.5">
+      </a-text>
     </a-entity>
   </a-scene>
 
+  <!-- 載入中UI -->
+  <div id="my-loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 1001;">
+    <div>正在載入AR相機...</div>
+  </div>
+  
+  <div id="my-scanning" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 1001;">
+    <div>請將相機對準任何平面物體開始掃描</div>
+  </div>
+  
+  <div id="my-error" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 1001;">
+    <div>AR載入失敗，請重新整理頁面</div>
+  </div>
+
   <script>
+    // 遊戲變數
+    let score = 0;
+    let missed = 0;
+    let gameActive = false;
+    let gameInterval;
+    let markerFound = false;
+    
+    // DOM元素
     const fruitContainer = document.getElementById("fruitContainer");
     const scoreEl = document.getElementById("score");
     const missedEl = document.getElementById("missed");
+    const gameStatusEl = document.getElementById("gameStatus");
+    const statusTextEl = document.getElementById("statusText");
+    const restartBtn = document.getElementById("restartBtn");
+    
+    // 水果類型配置
+    const fruitTypes = [
+      { color: "#FF6B6B", name: "apple" },    // 紅色蘋果
+      { color: "#FFE66D", name: "banana" },   // 黃色香蕉  
+      { color: "#A8E6CF", name: "grape" },    // 綠色葡萄
+      { color: "#FF8E53", name: "orange" },   // 橙色橘子
+      { color: "#C7CEEA", name: "plum" }      // 紫色李子
+    ];
 
-    let score = 0;
-    let missed = 0;
+    // 等待場景載入
+    document.querySelector('a-scene').addEventListener('loaded', () => {
+      console.log('A-Frame場景已載入');
+      setupAREvents();
+    });
 
-    const models = ["appleModel", "bananaModel", "grapeModel"];
+    // 設定AR事件監聽
+    function setupAREvents() {
+      const marker = document.getElementById('gameMarker');
+      
+      // 標記被找到時
+      marker.addEventListener('targetFound', () => {
+        console.log('AR標記已找到');
+        markerFound = true;
+        if (!gameActive) {
+          startGame();
+        }
+      });
+      
+      // 標記丟失時
+      marker.addEventListener('targetLost', () => {
+        console.log('AR標記丟失');
+        markerFound = false;
+        pauseGame();
+      });
+    }
 
+    // 開始遊戲
+    function startGame() {
+      console.log('遊戲開始');
+      gameActive = true;
+      gameStatusEl.style.display = 'none';
+      
+      // 每1.5秒生成一個水果
+      gameInterval = setInterval(() => {
+        if (gameActive && markerFound) {
+          spawnFruit();
+        }
+      }, 1500);
+    }
+
+    // 暫停遊戲
+    function pauseGame() {
+      if (gameInterval) {
+        clearInterval(gameInterval);
+      }
+      
+      if (gameActive) {
+        gameStatusEl.style.display = 'block';
+        statusTextEl.textContent = '請重新掃描標記繼續遊戲';
+      }
+    }
+
+    // 重新開始遊戲
+    function restartGame() {
+      score = 0;
+      missed = 0;
+      gameActive = false;
+      markerFound = false;
+      
+      scoreEl.textContent = score;
+      missedEl.textContent = missed;
+      
+      // 清除所有水果
+      while (fruitContainer.firstChild) {
+        fruitContainer.removeChild(fruitContainer.firstChild);
+      }
+      
+      if (gameInterval) {
+        clearInterval(gameInterval);
+      }
+      
+      gameStatusEl.style.display = 'block';
+      statusTextEl.textContent = '請掃描標記開始遊戲';
+      restartBtn.style.display = 'none';
+    }
+
+    // 生成水果
     function spawnFruit() {
-      const modelId = models[Math.floor(Math.random() * models.length)];
+      const fruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+      
+      // 創建水果實體
       const fruit = document.createElement("a-entity");
-
-      fruit.setAttribute("gltf-model", "#" + modelId);
-      fruit.setAttribute("scale", "0.3 0.3 0.3");
-
-      const x = (Math.random() - 0.5) * 1.5;
-      const z = (Math.random() - 0.5) * 1.5;
-      fruit.setAttribute("position", `${x} 0 ${z}`);
-
+      
+      // 設定幾何體和材質
+      fruit.setAttribute("geometry", "primitive: sphere; radius: 0.08");
+      fruit.setAttribute("material", `color: ${fruitType.color}; roughness: 0.3; metalness: 0.1`);
+      
+      // 隨機位置（在標記平面內）
+      const x = (Math.random() - 0.5) * 1.2;
+      const z = (Math.random() - 0.5) * 1.2;
+      const startY = -0.3;
+      const endY = 1.5;
+      
+      fruit.setAttribute("position", `${x} ${startY} ${z}`);
+      
+      // 添加上升動畫
       fruit.setAttribute("animation", {
         property: "position",
-        to: `${x} 2.5 ${z}`,
+        to: `${x} ${endY} ${z}`,
         dur: 3000,
-        easing: "linear"
+        easing: "easeOutQuad"
       });
-
+      
+      // 添加旋轉動畫
+      fruit.setAttribute("animation__rotate", {
+        property: "rotation",
+        to: "0 360 0",
+        dur: 2000,
+        loop: true
+      });
+      
+      // 設定點擊事件
+      fruit.setAttribute("class", "clickable");
       fruit.addEventListener("click", () => {
-        if (fruit.parentNode) {
-          fruitContainer.removeChild(fruit);
-          score += 1;
+        if (fruit.parentNode && gameActive) {
+          // 切水果效果
+          sliceFruit(fruit);
+          score += 10;
           scoreEl.textContent = score;
         }
       });
-
-      setTimeout(() => {
-        if (fruit.parentNode) {
+      
+      // 設定水果自動消失
+      const fruitTimeout = setTimeout(() => {
+        if (fruit.parentNode && gameActive) {
           fruitContainer.removeChild(fruit);
           missed += 1;
           missedEl.textContent = missed;
-          if (missed >= 10) {
-            alert("You Lose!");
+          
+          // 檢查遊戲結束條件
+          if (missed >= 5) {
+            endGame();
           }
         }
       }, 3000);
-
+      
+      // 將水果添加到容器
       fruitContainer.appendChild(fruit);
     }
 
-    // 每秒生一個水果
-    setInterval(() => {
-      const scene = document.querySelector("a-scene");
-      if (!scene.hasLoaded) return;
+    // 切水果效果
+    function sliceFruit(fruit) {
+      // 創建切片效果
+      const slice1 = fruit.cloneNode(true);
+      const slice2 = fruit.cloneNode(true);
+      
+      // 移除原始水果
+      fruitContainer.removeChild(fruit);
+      
+      // 設定切片動畫
+      slice1.setAttribute("animation", {
+        property: "position",
+        to: `${fruit.getAttribute('position').x - 0.2} ${fruit.getAttribute('position').y} ${fruit.getAttribute('position').z}`,
+        dur: 500
+      });
+      
+      slice1.setAttribute("animation__fade", {
+        property: "material.opacity",
+        to: "0",
+        dur: 500
+      });
+      
+      slice2.setAttribute("animation", {
+        property: "position",
+        to: `${fruit.getAttribute('position').x + 0.2} ${fruit.getAttribute('position').y} ${fruit.getAttribute('position').z}`,
+        dur: 500
+      });
+      
+      slice2.setAttribute("animation__fade", {
+        property: "material.opacity",
+        to: "0",
+        dur: 500
+      });
+      
+      fruitContainer.appendChild(slice1);
+      fruitContainer.appendChild(slice2);
+      
+      // 清除切片
+      setTimeout(() => {
+        if (slice1.parentNode) fruitContainer.removeChild(slice1);
+        if (slice2.parentNode) fruitContainer.removeChild(slice2);
+      }, 500);
+    }
 
-      spawnFruit();
-    }, 1000);
+    // 遊戲結束
+    function endGame() {
+      gameActive = false;
+      if (gameInterval) {
+        clearInterval(gameInterval);
+      }
+      
+      gameStatusEl.style.display = 'block';
+      statusTextEl.innerHTML = `遊戲結束!<br>最終得分: ${score}`;
+      restartBtn.style.display = 'inline-block';
+      
+      // 清除所有剩餘水果
+      while (fruitContainer.firstChild) {
+        fruitContainer.removeChild(fruitContainer.firstChild);
+      }
+    }
+
+    // 處理點擊事件
+    document.addEventListener('click', (event) => {
+      if (!gameActive) return;
+      
+      // 檢查是否點擊到水果
+      const scene = document.querySelector('a-scene');
+      const camera = document.querySelector('a-camera');
+      
+      if (scene && camera) {
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        
+        raycaster.setFromCamera(mouse, camera.getObject3D('camera'));
+        
+        const fruits = fruitContainer.querySelectorAll('a-entity');
+        fruits.forEach(fruit => {
+          const object3D = fruit.getObject3D('mesh');
+          if (object3D) {
+            const intersects = raycaster.intersectObject(object3D);
+            if (intersects.length > 0) {
+              fruit.click();
+            }
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>

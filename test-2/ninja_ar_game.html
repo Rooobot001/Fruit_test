@@ -80,36 +80,20 @@
 
   <!-- A-Frame場景 -->
   <a-scene
-    mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind; autoStart: true; uiLoading: #my-loading; uiScanning: #my-scanning; uiError: #my-error; maxTrack: 1; warmupTolerance: 5; missTolerance: 5;"
+    mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind; autoStart: true; uiLoading: #my-loading; uiScanning: #my-scanning; uiError: #my-error;"
     embedded
     color-space="sRGB"
-    renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true;"
+    renderer="colorManagement: true; physicallyCorrectLights: true"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
-    background="color: #000000"
   >
     <!-- 資源預載 -->
     <a-assets>
-      <!-- 水果混合器 -->
-      <a-mixin id="apple-mixin" 
+      <!-- 使用基本幾何體代替3D模型 -->
+      <a-mixin id="fruit-mixin" 
                geometry="primitive: sphere; radius: 0.1" 
-               material="color: #FF6B6B; roughness: 0.2; metalness: 0.1; emissive: #330000">
-      </a-mixin>
-      <a-mixin id="banana-mixin" 
-               geometry="primitive: cylinder; radius: 0.05; height: 0.15" 
-               material="color: #FFE66D; roughness: 0.2; metalness: 0.1; emissive: #332200">
-      </a-mixin>
-      <a-mixin id="grape-mixin" 
-               geometry="primitive: sphere; radius: 0.08" 
-               material="color: #A8E6CF; roughness: 0.2; metalness: 0.1; emissive: #003300">
-      </a-mixin>
-      <a-mixin id="orange-mixin" 
-               geometry="primitive: sphere; radius: 0.09" 
-               material="color: #FF8E53; roughness: 0.3; metalness: 0.1; emissive: #331100">
-      </a-mixin>
-      <a-mixin id="plum-mixin" 
-               geometry="primitive: sphere; radius: 0.07" 
-               material="color: #C7CEEA; roughness: 0.2; metalness: 0.1; emissive: #110033">
+               material="roughness: 0.3; metalness: 0.1"
+               animation__hover="property: rotation; to: 0 360 0; dur: 2000; loop: true">
       </a-mixin>
     </a-assets>
 
@@ -143,27 +127,17 @@
     </a-entity>
   </a-scene>
 
-  <div id="my-loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; z-index: 1001;">
-    <div style="margin-bottom: 20px;">🎮 正在載入AR相機...</div>
-    <div style="font-size: 14px; color: #ccc;">請確保允許相機權限</div>
+  <!-- 載入中UI -->
+  <div id="my-loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 1001;">
+    <div>正在載入AR相機...</div>
   </div>
   
-  <div id="my-scanning" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; z-index: 1001;">
-    <div style="margin-bottom: 20px;">📱 請將相機對準任何物體開始掃描</div>
-    <div style="font-size: 14px; color: #ccc; text-align: center;">可以用書本、雜誌、名片或任何有圖案的平面物體</div>
-    <button onclick="forceStart()" style="margin-top: 20px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 16px;">跳過掃描直接開始</button>
+  <div id="my-scanning" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 1001;">
+    <div>請將相機對準任何平面物體開始掃描</div>
   </div>
   
-  <div id="my-error" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(139, 0, 0, 0.9); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; z-index: 1001;">
-    <div style="margin-bottom: 20px;">❌ AR載入失敗</div>
-    <div style="font-size: 14px; color: #ffcccb; text-align: center; margin-bottom: 20px;">
-      可能原因：<br>
-      • 相機權限被拒絕<br>
-      • 網絡連線問題<br>
-      • 瀏覽器不支援WebXR
-    </div>
-    <button onclick="location.reload()" style="padding: 10px 20px; background: #ff4444; color: white; border: none; border-radius: 5px; font-size: 16px;">重新載入</button>
-    <button onclick="forceStart()" style="margin-top: 10px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 16px;">強制開始遊戲</button>
+  <div id="my-error" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 1001;">
+    <div>AR載入失敗，請重新整理頁面</div>
   </div>
 
   <script>
@@ -184,80 +158,17 @@
     
     // 水果類型配置
     const fruitTypes = [
-      { 
-        name: "apple", 
-        mixin: "apple-mixin",
-        geometry: "primitive: sphere; radius: 0.1",
-        material: "color: #FF6B6B; roughness: 0.2; metalness: 0.1; emissive: #330000",
-        scale: "1 1 1"
-      },
-      { 
-        name: "banana", 
-        mixin: "banana-mixin",
-        geometry: "primitive: cylinder; radius: 0.05; height: 0.15",
-        material: "color: #FFE66D; roughness: 0.2; metalness: 0.1; emissive: #332200",
-        scale: "1 1 1"
-      },
-      { 
-        name: "grape", 
-        mixin: "grape-mixin",
-        geometry: "primitive: sphere; radius: 0.08",
-        material: "color: #A8E6CF; roughness: 0.2; metalness: 0.1; emissive: #003300",
-        scale: "1 1 1"
-      },
-      { 
-        name: "orange", 
-        mixin: "orange-mixin",
-        geometry: "primitive: sphere; radius: 0.09",
-        material: "color: #FF8E53; roughness: 0.3; metalness: 0.1; emissive: #331100",
-        scale: "1 1 1"
-      },
-      { 
-        name: "plum", 
-        mixin: "plum-mixin",
-        geometry: "primitive: sphere; radius: 0.07",
-        material: "color: #C7CEEA; roughness: 0.2; metalness: 0.1; emissive: #110033",
-        scale: "1 1 1"
-      }
+      { color: "#FF6B6B", name: "apple" },    // 紅色蘋果
+      { color: "#FFE66D", name: "banana" },   // 黃色香蕉  
+      { color: "#A8E6CF", name: "grape" },    // 綠色葡萄
+      { color: "#FF8E53", name: "orange" },   // 橙色橘子
+      { color: "#C7CEEA", name: "plum" }      // 紫色李子
     ];
-
-    // 強制開始遊戲（跳過AR掃描）
-    function forceStart() {
-      // 隱藏所有UI提示
-      document.getElementById('my-loading').style.display = 'none';
-      document.getElementById('my-scanning').style.display = 'none';
-      document.getElementById('my-error').style.display = 'none';
-      
-      // 模擬標記找到
-      markerFound = true;
-      
-      // 顯示遊戲場地（即使沒有AR標記）
-      const gameMarker = document.getElementById('gameMarker');
-      if (gameMarker) {
-        gameMarker.setAttribute('visible', true);
-        gameMarker.setAttribute('position', '0 0 -2'); // 放在相機前方2米
-      }
-      
-      // 開始遊戲
-      if (!gameActive) {
-        startGame();
-      }
-    }
 
     // 等待場景載入
     document.querySelector('a-scene').addEventListener('loaded', () => {
       console.log('A-Frame場景已載入');
       setupAREvents();
-      
-      // 如果5秒後還沒載入成功，提供備用選項
-      setTimeout(() => {
-        const loadingEl = document.getElementById('my-loading');
-        const scanningEl = document.getElementById('my-scanning');
-        if (loadingEl && loadingEl.style.display !== 'none') {
-          loadingEl.style.display = 'none';
-          scanningEl.style.display = 'block';
-        }
-      }, 5000);
     });
 
     // 設定AR事件監聽
@@ -338,15 +249,9 @@
       // 創建水果實體
       const fruit = document.createElement("a-entity");
       
-      // 設定幾何體和材質（使用mixin或直接設定）
-      if (fruitType.mixin) {
-        fruit.setAttribute("mixin", fruitType.mixin);
-      } else {
-        fruit.setAttribute("geometry", fruitType.geometry);
-        fruit.setAttribute("material", fruitType.material);
-      }
-      
-      fruit.setAttribute("scale", fruitType.scale);
+      // 設定幾何體和材質
+      fruit.setAttribute("geometry", "primitive: sphere; radius: 0.08");
+      fruit.setAttribute("material", `color: ${fruitType.color}; roughness: 0.3; metalness: 0.1`);
       
       // 隨機位置（在標記平面內）
       const x = (Math.random() - 0.5) * 1.2;
@@ -372,23 +277,9 @@
         loop: true
       });
       
-      // 添加懸浮效果
-      fruit.setAttribute("animation__float", {
-        property: "position",
-        from: `${x} ${startY} ${z}`,
-        to: `${x} ${startY + 0.05} ${z}`,
-        dur: 1000,
-        direction: "alternate",
-        loop: true,
-        easing: "easeInOutSine"
-      });
-      
       // 設定點擊事件
       fruit.setAttribute("class", "clickable");
-      fruit.setAttribute("cursor", "rayOrigin: mouse");
-      
-      fruit.addEventListener("click", (event) => {
-        event.stopPropagation();
+      fruit.addEventListener("click", () => {
         if (fruit.parentNode && gameActive) {
           // 切水果效果
           sliceFruit(fruit);
@@ -413,92 +304,50 @@
       
       // 將水果添加到容器
       fruitContainer.appendChild(fruit);
-      
-      console.log(`生成了 ${fruitType.name} 水果`);
     }
 
     // 切水果效果
     function sliceFruit(fruit) {
-      const currentPos = fruit.getAttribute('position');
-      const currentGeometry = fruit.getAttribute('geometry');
-      const currentMaterial = fruit.getAttribute('material');
-      
-      // 創建兩個切片
-      const slice1 = document.createElement('a-entity');
-      const slice2 = document.createElement('a-entity');
-      
-      // 複製原始水果的屬性
-      slice1.setAttribute('geometry', currentGeometry);
-      slice1.setAttribute('material', currentMaterial);
-      slice1.setAttribute('scale', '0.7 0.7 0.7');
-      
-      slice2.setAttribute('geometry', currentGeometry);
-      slice2.setAttribute('material', currentMaterial);
-      slice2.setAttribute('scale', '0.7 0.7 0.7');
-      
-      // 設定切片位置
-      slice1.setAttribute('position', `${currentPos.x - 0.1} ${currentPos.y} ${currentPos.z}`);
-      slice2.setAttribute('position', `${currentPos.x + 0.1} ${currentPos.y} ${currentPos.z}`);
+      // 創建切片效果
+      const slice1 = fruit.cloneNode(true);
+      const slice2 = fruit.cloneNode(true);
       
       // 移除原始水果
-      if (fruit.parentNode) {
-        fruitContainer.removeChild(fruit);
-      }
+      fruitContainer.removeChild(fruit);
       
-      // 添加切片到場景
+      // 設定切片動畫
+      slice1.setAttribute("animation", {
+        property: "position",
+        to: `${fruit.getAttribute('position').x - 0.2} ${fruit.getAttribute('position').y} ${fruit.getAttribute('position').z}`,
+        dur: 500
+      });
+      
+      slice1.setAttribute("animation__fade", {
+        property: "material.opacity",
+        to: "0",
+        dur: 500
+      });
+      
+      slice2.setAttribute("animation", {
+        property: "position",
+        to: `${fruit.getAttribute('position').x + 0.2} ${fruit.getAttribute('position').y} ${fruit.getAttribute('position').z}`,
+        dur: 500
+      });
+      
+      slice2.setAttribute("animation__fade", {
+        property: "material.opacity",
+        to: "0",
+        dur: 500
+      });
+      
       fruitContainer.appendChild(slice1);
       fruitContainer.appendChild(slice2);
       
-      // 切片動畫效果
-      slice1.setAttribute('animation', {
-        property: 'position',
-        to: `${currentPos.x - 0.3} ${currentPos.y - 0.2} ${currentPos.z}`,
-        dur: 800,
-        easing: 'easeOutQuad'
-      });
-      
-      slice1.setAttribute('animation__fade', {
-        property: 'material.opacity',
-        to: '0',
-        dur: 800,
-        easing: 'easeOutQuad'
-      });
-      
-      slice1.setAttribute('animation__rotate', {
-        property: 'rotation',
-        to: '-45 0 -90',
-        dur: 800,
-        easing: 'easeOutQuad'
-      });
-      
-      slice2.setAttribute('animation', {
-        property: 'position',
-        to: `${currentPos.x + 0.3} ${currentPos.y - 0.2} ${currentPos.z}`,
-        dur: 800,
-        easing: 'easeOutQuad'
-      });
-      
-      slice2.setAttribute('animation__fade', {
-        property: 'material.opacity',
-        to: '0',
-        dur: 800,
-        easing: 'easeOutQuad'
-      });
-      
-      slice2.setAttribute('animation__rotate', {
-        property: 'rotation',
-        to: '45 0 90',
-        dur: 800,
-        easing: 'easeOutQuad'
-      });
-      
-      // 800ms後清除切片
+      // 清除切片
       setTimeout(() => {
         if (slice1.parentNode) fruitContainer.removeChild(slice1);
         if (slice2.parentNode) fruitContainer.removeChild(slice2);
-      }, 800);
-      
-      console.log('水果被切開了！');
+      }, 500);
     }
 
     // 遊戲結束

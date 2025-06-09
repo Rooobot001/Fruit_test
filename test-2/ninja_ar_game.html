@@ -9,17 +9,24 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    body, html { margin: 0; overflow: hidden; }
-    #hud {
-      position: fixed;
-      top: 10px; left: 10px;
-      color: white; font-family: sans-serif;
-      background: rgba(0,0,0,0.6);
-      padding: 10px; border-radius: 8px;
-      z-index: 10;
-    }
-  </style>
-</head>
+      /* 隱藏滾動條，讓 AR 視圖全螢幕顯示 */
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+</html>
+<body>
+  <!-- A-Frame 場景根元素 -->
+  <!-- mindar-image：設定 AR 標記檔案路徑、自動開始與 UI 顯示 -->
+  <a-scene
+    mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiLoading: true; uiError: true; uiScanning: true;"
+    color-space="sRGB"
+    renderer="colorManagement: true; physicallyCorrectLights: true"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+  >
 
 <body>
   <div id="hud">
